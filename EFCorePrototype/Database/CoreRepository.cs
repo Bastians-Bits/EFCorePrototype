@@ -58,7 +58,7 @@ namespace EFCorePrototype.Database
         /// <returns>A collection of primary keys with values</returns>
         /// <exception cref="ArgumentNullException">If no entity is passed</exception>
         /// <exception cref="Exception">If the entity has no primary key</exception>
-		/// <exception cref="Exception">If the value of property couldn't be loaded</exception>
+        /// <exception cref="Exception">If the value of property couldn't be loaded</exception>
         protected ICollection<KeyValuePair<string, object>> GetPrimaryKeyValues(TEntity entity)
         {
             _ = entity ?? throw new ArgumentNullException(nameof(entity));
