@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EFCorePrototype.Database
 {
-	public class EFCorePrototypeDatabase : DbContext
-	{
-		public DbSet<SchoolEntity> SchoolEntities { get; set; }
+    public class EFCorePrototypeDatabase : DbContext
+    {
+        public DbSet<SchoolEntity> SchoolEntities { get; set; }
         public DbSet<ClassroomEntity> ClassroomEntities { get; set; }
         public DbSet<PerformanceEntity> PerformanceEntities { get; set; }
 
