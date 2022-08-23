@@ -30,24 +30,35 @@ namespace EFCorePrototype.Database
         /// <returns>A query to load the entity from the database</returns>
         protected IQueryable<TEntity> GetByPrimaryKey(ICollection<KeyValuePair<string, object>> primaryKeys)
         {
-            IQueryable<TEntity> query = Database.Set<TEntity>().AsQueryable();
-            ParameterExpression? parameter = Expression.Parameter(typeof(TEntity), "t");
+            ParameterExpression? parameter = Expression.Parameter(typeof(TEntity));
+            Expression<Func<TEntity, bool>>? expression = null;
 
             foreach (KeyValuePair<string, object> primaryKey in primaryKeys)
             {
                 string primaryKeyName = primaryKey.Key;
                 object primaryKeyValue = primaryKey.Value;
-                var expression = Expression.Lambda<Func<TEntity, bool>>(
-                    Expression.Equal(
-                        Expression.Property(parameter, primaryKeyName),
-                        Expression.Constant(primaryKeyValue)
-                    ),
+
+                var body = Expression.Equal(
+                    Expression.Property(parameter, primaryKeyName),
+                    Expression.Constant(primaryKeyValue)
+                );
+
+                // ToDo: If already initialized, we append the new expression.
+                // The init. could probably moved outside the foreach,
+                // but lists are unsorted and sorting costs too much time
+                if (expression != null)
+                    body = Expression.AndAlso(expression.Body, body);
+
+                expression = Expression.Lambda<Func<TEntity, bool>>(
+                    body,
                     parameter
                 );
-                query = query.Where(expression);
             }
 
-            return query;
+            if (expression == null)
+                throw new Exception($"Could not create expression for entity {typeof(TEntity)}");
+
+            return Database.Set<TEntity>().AsQueryable().Where(expression);
         }
 
         /// <summary>
@@ -90,4 +101,3 @@ namespace EFCorePrototype.Database
         }
     }
 }
-
