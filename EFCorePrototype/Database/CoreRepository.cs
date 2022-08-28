@@ -45,7 +45,7 @@ namespace EFCorePrototype.Database
 
                 // ToDo: If already initialized, we append the new expression.
                 // The init. could probably moved outside the foreach,
-                // but lists are unsorted and sorting costs too much time
+                // but lists are unsrted and sorting costs too much time
                 if (expression != null)
                     body = Expression.AndAlso(expression.Body, body);
 
@@ -80,7 +80,7 @@ namespace EFCorePrototype.Database
 
             if (primaryKey == null || !primaryKey.Properties.Any())
             {
-                throw new Exception($"Entity of type {nameof(entityType)} has no primary key declared");
+                throw new Exception($"Entity of type {entityType.Name} has no primary key declared");
             }
 
             ICollection<KeyValuePair<string, object>> primaryKeyValues = new List<KeyValuePair<string, object>>();
@@ -92,9 +92,16 @@ namespace EFCorePrototype.Database
                 object? propertyValue = property.GetGetter().GetClrValue(entity);
                 if (propertyValue == null)
                 {
-                    throw new Exception($"Could not load value for property {propertyName} of entity {nameof(entityType)}");
+                    // ToDo: Replace with logger
+                    Console.WriteLine($"Could not load value for property {propertyName} of entity {entityType.Name}.{Environment.NewLine}Partially loading is not recommendet");
+                    continue;
                 }
                 primaryKeyValues.Add(new KeyValuePair<string, object>(propertyName, propertyValue));
+            }
+
+            if (!primaryKeyValues.Any())
+            {
+                throw new Exception($"Could not load any primary key values for entity {entityType.Name}");
             }
 
             return primaryKeyValues;
