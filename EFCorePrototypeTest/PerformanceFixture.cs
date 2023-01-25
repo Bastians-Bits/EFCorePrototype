@@ -28,6 +28,7 @@ namespace EFCorePrototypeTest
 		{
             Console.WriteLine("-------------------");
             Console.WriteLine("Start Test Single");
+            Console.WriteLine("Load a single entry with all primary keys");
             Console.WriteLine("-------------------");
             var database = new EFCorePrototypeDatabase();
             database.Database.EnsureDeleted();
@@ -44,11 +45,10 @@ namespace EFCorePrototypeTest
 				KeyThree = "KeyThree50000",
 				KeyFour = "KeyFour50000",
 				KeyFive = "KeyFive50000"
-
 			}).FirstOrDefault();
             long stopTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 			Assert.NotNull(t1Entity);
-            Console.WriteLine($"Loaded entry in {stopTime - startTime}ms");
+            Console.WriteLine($"Repository: Loaded entry in {stopTime - startTime}ms");
 
 			// Manuall
 			startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -61,7 +61,44 @@ namespace EFCorePrototypeTest
 			).FirstOrDefault();
 			stopTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 			Assert.NotNull(t2Entity);
-            Console.WriteLine($"Loaded entry in {stopTime - startTime}ms");
+            Console.WriteLine($"Linq: Loaded entry in {stopTime - startTime}ms");
+        }
+
+        [Fact]
+		public void Test_Performance_Single_Partial()
+		{
+            Console.WriteLine("-------------------");
+            Console.WriteLine("Start Test Single");
+            Console.WriteLine("Load a single entry with a partial primary keys");
+            Console.WriteLine("-------------------");
+            var database = new EFCorePrototypeDatabase();
+            database.Database.EnsureDeleted();
+            database.Database.EnsureCreated();
+			var repository = new PerformanceRepository(database);
+
+            CreateEntries(database);
+
+			// Repository
+			long startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+			PerformanceEntity? t1Entity = repository.GetByPrimaryKey(new PerformanceEntity() {
+				KeyOne = "KeyOne50000",
+				KeyThree = "KeyThree50000",
+				KeyFour = "KeyFour50000"
+			}).FirstOrDefault();
+            long stopTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+			Assert.NotNull(t1Entity);
+            Console.WriteLine($"Repository: Loaded entry in {stopTime - startTime}ms");
+
+			// Manuall
+			startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+			PerformanceEntity? t2Entity = database.PerformanceEntities.Where(w =>
+				w.KeyOne == "KeyOne50001" &&
+                w.KeyThree == "KeyThree50001" &&
+                w.KeyFour == "KeyFour50001"
+			).FirstOrDefault();
+			stopTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+			Assert.NotNull(t2Entity);
+            Console.WriteLine($"Linq: Loaded entry in {stopTime - startTime}ms");
         }
 
         [Fact]
@@ -69,6 +106,7 @@ namespace EFCorePrototypeTest
         {
             Console.WriteLine("-------------------");
             Console.WriteLine("Start Test Multiple");
+            Console.WriteLine("Load 1k random entries all primary keys");
             Console.WriteLine("-------------------");
             var database = new EFCorePrototypeDatabase();
             database.Database.EnsureDeleted();
@@ -86,7 +124,7 @@ namespace EFCorePrototypeTest
                 Assert.NotNull(t1Entity);
             }
             long stopTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            Console.WriteLine($"Loaded entries in {stopTime - startTime}ms");
+            Console.WriteLine($"Repository: Loaded entries in {stopTime - startTime}ms");
 
             // Manuall
             startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -102,7 +140,7 @@ namespace EFCorePrototypeTest
                 Assert.NotNull(t2Entity);
             }
             stopTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            Console.WriteLine($"Loaded entries in {stopTime - startTime}ms");
+            Console.WriteLine($"Linq: Loaded entries in {stopTime - startTime}ms");
         }
 
         private ICollection<PerformanceEntity> CreateSample()
@@ -133,11 +171,11 @@ namespace EFCorePrototypeTest
             long startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             for (int i = 0; i < AmountSamples; i++)
 			{
-				if (i % 1_000 == 0)
+				/*if (i % 1_000 == 0)
 				{
 					database.SaveChangesAsync();
 					Console.WriteLine($"Added {i} entries");
-				}
+				}*/
 
 				PerformanceEntity sample = new PerformanceEntity();
 				sample.KeyOne   = $"KeyOne{i}"  ;
